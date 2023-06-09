@@ -29,12 +29,13 @@ unsigned int f,h,e,g;
 
 #define DIR_LD 2   //FLIPPING MOTOR
 #define PWM_LD 3  //FLIPPING MOTOR
-
+//slingshot limiting motor movement
+#define TRIGGER_PIN 42
+#define ECHO_PIN 43
+#define BUZZER_PIN 44
 // Define a stepper motor 1 for arduino 
 // direction Digital A1 (CW), pulses Digital A0 (CLK)
-
 AccelStepper stepper(1, A0, 34); // STEP,DIRECTION PINS define stepper motor parameters
-
 float speeed = 140;
 
 void receiveData(int byteCount) {
@@ -195,6 +196,10 @@ void setup() {
   stepper.setSpeed(2000);
   stepper.setAcceleration(2000); // Set acceleration value for the stepper
   stepper.setCurrentPosition(0); // Set the current position to 0 steps
+
+  pinMode(TRIGGER_PIN, OUTPUT);
+  pinMode(ECHO_PIN, INPUT);
+  pinMode(BUZZER_PIN, OUTPUT);
 }
 //Function to receive data from master which get data from PS2 ctrller
 
@@ -416,5 +421,24 @@ void loop() {
        digitalWrite(rly_em, LOW);
        flag = 0;
     }
+    long duration, distance;
+// Clear the trigger pin
+  digitalWrite(TRIGGER_PIN, LOW);
+  delayMicroseconds(2);
+// Set the trigger pin high for 10 microseconds
+  digitalWrite(TRIGGER_PIN, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(TRIGGER_PIN, LOW);
+// Read the echo pin, calculate the distance in centimeters
+  duration = pulseIn(ECHO_PIN, HIGH);
+  distance = duration * 0.034 / 2;
+  if (distance < 3) {
+// If the distance is less than 3 cm, turn on the buzzer
+    digitalWrite(BUZZER_PIN, HIGH);
+  } else {
+    // Otherwise, turn off the buzzer
+    digitalWrite(BUZZER_PIN, LOW);
+  }
+ delay(50); // Delay for 1 second before the next measurement
     
 }
